@@ -24,25 +24,24 @@ if ($conexionBD->connect_error) {
     die(json_encode(["success" => 0, "error" => "Error de conexión: " . $conexionBD->connect_error]));
 }
 
-
 /* ---------------------- CONSULTAR POR CÓDIGO ---------------------- */
 if (isset($_GET["consultarCodigo"])) {
     $codigo = $conexionBD->real_escape_string($_GET["consultarCodigo"]);
-    $sqlUbicacion = mysqli_query($conexionBD, "SELECT * FROM ubicaciones WHERE codigo='$codigo'");
-    if (mysqli_num_rows($sqlUbicacion) > 0) {
-        $ubicacion = mysqli_fetch_assoc($sqlUbicacion);
-        echo json_encode($ubicacion);
+    $sqlResponsable = mysqli_query($conexionBD, "SELECT * FROM responsables WHERE codigo='$codigo'");
+    if (mysqli_num_rows($sqlResponsable) > 0) {
+        $responsable = mysqli_fetch_assoc($sqlResponsable);
+        echo json_encode($responsable);
     } else {
         echo json_encode(["success" => 0]);
     }
     exit();
 }
 
-/* ---------------------- BORRAR UBICACION ---------------------- */
+/* ---------------------- BORRAR RESPONSABLE ---------------------- */
 if (isset($_GET["borrar"])) {
     $codigo = intval($_GET["borrar"]);
-    $sqlUbicacion = mysqli_query($conexionBD, "DELETE FROM ubicaciones WHERE codigo=$codigo");
-    if ($sqlUbicacion) {
+    $sqlResponsable = mysqli_query($conexionBD, "DELETE FROM responsables WHERE codigo=$codigo");
+    if ($sqlResponsable) {
         echo json_encode(["success" => 1]);
     } else {  
         echo json_encode(["success" => 0]); 
@@ -50,46 +49,50 @@ if (isset($_GET["borrar"])) {
     exit();
 }
 
-/* ---------------------- INSERTAR UBICACION ---------------------- */
+/* ---------------------- INSERTAR RESPONSABLE ---------------------- */
 if (isset($_GET["insertar"])) {
     $data = json_decode(file_get_contents("php://input"));
-    $servicio = $data->servicio ?? '';
-    $ubicacion = $data->ubicacion ?? '';
+    $documento = $data->documento ?? '';
+    $nombreape = $data->nombreape ?? '';
+    $cargo = $data->cargo ?? '';
     $telefono = $data->telefono ?? '';
 
-    if ($servicio != "" && $ubicacion != "" && $telefono != "") {        
-        $sqlUbicacion = mysqli_query($conexionBD, 
-            "INSERT INTO ubicaciones(servicio, ubicacion, telefono) VALUES('$servicio','$ubicacion','$telefono')");
-        echo json_encode(["success" => $sqlUbicacion ? 1 : 0]);
+    if ($documento != "" && $nombreape != "" && $cargo != "" && $telefono != "") {        
+        $sqlResponsable = mysqli_query($conexionBD, 
+            "INSERT INTO responsables(documento, nombreape, cargo, telefono) 
+             VALUES('$documento','$nombreape','$cargo','$telefono')");
+        echo json_encode(["success" => $sqlResponsable ? 1 : 0]);
     } else {
         echo json_encode(["success" => 0, "error" => "Datos incompletos"]);
     }
     exit();
 }
 
-/* ---------------------- ACTUALIZAR UBICACION ---------------------- */
+/* ---------------------- ACTUALIZAR RESPONSABLE ---------------------- */
 if (isset($_GET["actualizar"])) { 
     $data = json_decode(file_get_contents("php://input"));
     $codigo = $data->codigo ?? intval($_GET["actualizar"]);
-    $servicio = $data->servicio ?? '';
-    $ubicacion = $data->ubicacion ?? '';
+    $documento = $data->documento ?? '';
+    $nombreape = $data->nombreape ?? '';
+    $cargo = $data->cargo ?? '';
     $telefono = $data->telefono ?? '';
 
-    $sqlUbicacion = mysqli_query($conexionBD, 
-        "UPDATE ubicaciones SET servicio='$servicio', ubicacion='$ubicacion', telefono='$telefono' WHERE codigo='$codigo'");
+    $sqlResponsable = mysqli_query($conexionBD, 
+        "UPDATE responsables 
+         SET documento='$documento', nombreape='$nombreape', cargo='$cargo', telefono='$telefono' 
+         WHERE codigo='$codigo'");
     
-    echo json_encode(["success" => $sqlUbicacion ? 1 : 0]);
+    echo json_encode(["success" => $sqlResponsable ? 1 : 0]);
     exit();
 }
 
-/* ---------------------- MOSTRAR TODAS LAS UBICACIONES ---------------------- */
-$sqlUbicaciones = mysqli_query($conexionBD, "SELECT * FROM ubicaciones");
-if (mysqli_num_rows($sqlUbicaciones) > 0) {
-    $ubicaciones = mysqli_fetch_all($sqlUbicaciones, MYSQLI_ASSOC);
-    echo json_encode($ubicaciones);
+/* ---------------------- MOSTRAR TODOS LOS RESPONSABLES ---------------------- */
+$sqlResponsables = mysqli_query($conexionBD, "SELECT * FROM responsables");
+if (mysqli_num_rows($sqlResponsables) > 0) {
+    $responsables = mysqli_fetch_all($sqlResponsables, MYSQLI_ASSOC);
+    echo json_encode($responsables);
 } else { 
     echo json_encode([["success" => 0]]); 
 }
 
 ?>
-
