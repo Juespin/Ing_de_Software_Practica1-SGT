@@ -1,8 +1,19 @@
 <template>
   <div class="app">
-    <header class="header">
-      <h1>📋 Sistema de Gestión Tecnológica (SGT)</h1>
-      <p>Gestión de ubicaciones, personal responsable y equipos médicos del centro de salud</p>
+  
+    <title>Sistema de Gestión Tecnológica</title>
+    <header class="header-card">
+      <!-- Contenedor flex -->
+      <div class="header-content">
+        <!-- Logo a la izquierda -->
+        <img src="@/assets/logo.png" alt="Logo" class="header-logo">
+
+        <!-- Texto a la derecha -->
+        <div class="header-text">
+          <h1>Sistema de Gestión Tecnológica (SGT)</h1>
+          <p>Gestión de ubicaciones, personal responsable y equipos médicos del centro de salud</p>
+        </div>
+      </div>
     </header>
 
     <!-- Barra de pestañas -->
@@ -49,12 +60,19 @@ export default {
 </script>
 
 <style scoped>
+
+header {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 /* Encabezado */
-.header {
+.header-card {
   padding: 16px;
   background: #f8fbff;
   border-radius: 10px;
   margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-align: center;
 }
 .header h1 {
   font-size: 20px;
@@ -63,6 +81,16 @@ export default {
 .header p {
   color: #666;
   margin: 5px 0 0;
+}
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;          
+}
+.header-logo {
+  width: 200px;  
+  height: 200px;
+  object-fit: contain;
 }
 
 /* Pestañas */

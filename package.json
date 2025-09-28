@@ -1,0 +1,23 @@
+{
+  "name": "ing_de_software_practica1-sgt",
+  "version": "1.0.0",
+  "description": "<img width=\"844\" height=\"271\" alt=\"image\" src=\"https://github.com/user-attachments/assets/3322c07d-15ed-4459-ba65-56b802f576ac\" />",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Juespin/Ing_de_Software_Practica1-SGT.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Juespin/Ing_de_Software_Practica1-SGT/issues"
+  },
+  "homepage": "https://github.com/Juespin/Ing_de_Software_Practica1-SGT#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
