@@ -47,7 +47,7 @@
           >
             <td>{{ r.id }}</td>
             <td>{{ r.Documento }}</td>
-            <td>{{ r["Nombre y Apellidos"] }}</td>
+            <td>{{ r.Nombre_y_Apellidos }}</td>
             <td>{{ r.Cargo }}</td>
             <td>{{ r.Telefono }}</td>
             <td class="p-3 border-b border-gray-200 flex gap-2">
@@ -75,20 +75,17 @@
                 <h3>Añadir nuevo responsable</h3>
 
                 <form @submit.prevent="guardarNuevoResponsable">
-                  <label>Código</label>
-                  <input v-model="newResponsable.Codigo" required />
-
                   <label>Documento</label>
-                  <input v-model="newResponsable.Documento" required />
+                  <input v-model="newResponsable.documento" required />
 
                   <label>Nombres y apellidos</label>
-                  <input v-model="newResponsable.Nombre" required />
+                  <input v-model="newResponsable.nombreape" required />
                   
                   <label>Cargo</label>
-                  <input v-model="newResponsable.Cargo" required />
+                  <input v-model="newResponsable.cargo" required />
 
                   <label>Teléfono</label>
-                  <input v-model="newResponsable.Telefono" required />
+                  <input v-model="newResponsable.telefono" required />
 
                   <div class="modal-actions">
                     <button type="submit" class="btn-accion btn-anadir">Guardar</button>
@@ -116,11 +113,10 @@ export default {
       responsables: [],
       showModal: false,  
       newResponsable: {    
-        Codigo: "",
-        Documento: "",
-        Nombre: "",
-        Cargo: "",
-        Telefono: ""
+        documento: "",
+        nombreape: "",
+        cargo: "",
+        telefono: ""
       }
     }
   },
@@ -144,7 +140,7 @@ export default {
         const fields = [
           r.id,
           r.Documento,
-          r["Nombre y Apellidos"],
+          r.Nombre_y_Apellidos,
           r.Cargo,
           r.Telefono
         ]
@@ -158,24 +154,68 @@ export default {
 
   methods: {
     editar(r) {
-      alert("Editar datos de " + r["Nombre y Apellidos"])
+      this.newResponsable = {
+        id: r.id,
+        documento: r.Documento,
+        nombreape: r.Nombre_y_Apellidos,
+        cargo: r.Cargo,
+        telefono: r.Telefono
+      }
+      this.showModal = true
     },
     
     eliminar(id) {
-      alert("Eliminar registro con documento " + id)
+      if (confirm("¿Estás seguro de eliminar este responsable?")) {
+        fetch(`http://localhost/responsables/?borrar=${id}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success === 1) {
+              this.cargarResponsables()
+              alert("Responsable eliminado correctamente")
+            } else {
+              alert("Error al eliminar el responsable")
+            }
+          })
+          .catch(err => {
+            console.error("Error:", err)
+            alert("Error al eliminar el responsable")
+          })
+      }
     },
 
     guardarNuevoResponsable() {
-      this.responsables.push({
-        id: this.newResponsable.Codigo, // 👈 usar "id" en vez de "Codigo"
-        Documento: this.newResponsable.Documento,
-        "Nombre y Apellidos": this.newResponsable.Nombre, // 👈 convertir Nombre a "Nombre y Apellidos"
-        Cargo: this.newResponsable.Cargo,
-        Telefono: this.newResponsable.Telefono
+      const url = this.newResponsable.id ? 
+        `http://localhost/responsables/?actualizar=${this.newResponsable.id}` : 
+        "http://localhost/responsables/?insertar"
+      
+      const method = "POST"
+      const headers = {
+        "Content-Type": "application/json"
+      }
+      
+      const body = JSON.stringify({
+        documento: this.newResponsable.documento,
+        nombreape: this.newResponsable.nombreape,
+        cargo: this.newResponsable.cargo,
+        telefono: this.newResponsable.telefono
       })
 
-      this.newResponsable = { Codigo: "", Documento: "", Nombre: "", Cargo:"", Telefono: "" }
-      this.showModal = false
+      fetch(url, { method, headers, body })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success === 1) {
+            this.cargarResponsables()
+            this.showModal = false
+            this.newResponsable = { documento: "", nombreape: "", cargo: "", telefono: "" }
+            alert("Responsable guardado correctamente")
+          } else {
+            alert("Error al guardar el responsable")
+          }
+        })
+        .catch(err => {
+          console.error("Error:", err)
+          alert("Error al guardar el responsable")
+        })
     }
   }
 }

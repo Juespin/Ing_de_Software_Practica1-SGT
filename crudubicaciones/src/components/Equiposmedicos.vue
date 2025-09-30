@@ -16,7 +16,7 @@
 
           <!-- Botón Añadir -->
           <button
-            @click="showModal = true"
+            @click="openModal"
             class="btn-accion btn-anadir"
           >
             ➕ Añadir
@@ -45,15 +45,15 @@
           <tbody>
             <tr
               v-for="d in filteredDispositivos"
-              :key="d['Numero activo']"
+              :key="d.Numero_Activo"
               class="hover:bg-gray-50"
             >
-              <td>{{ d["Numero Activo"] }}</td>
+              <td>{{ d.Numero_Activo }}</td>
               <td>{{ d.Equipo }}</td>
               <td>{{ d.Marca }}</td>
               <td>{{ d.Modelo }}</td>
-              <td>{{ d["Codigo Ubicacion"] }}</td>
-              <td>{{ d["Codigo Responsable"] }}</td>
+              <td>{{ d.Codigo_Ubicacion }}</td>
+              <td>{{ d.Codigo_Responsable }}</td>
               <td class="p-3 border-b border-gray-200 flex gap-2"> 
                  <!-- Botón Editar -->
                 <button
@@ -79,43 +79,43 @@
         <!-- MODAL (fuera de la tabla para que no se repita) -->
         <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
           <div class="modal">
-            <h3>Añadir nuevo dispositivo</h3>
+            <h3>{{ editing ? 'Editar dispositivo' : 'Añadir nuevo dispositivo' }}</h3>
 
             <form @submit.prevent="guardarNuevoDispositivo">
               <label>Número activo</label>
-              <input v-model="newDispositivo.NumeroActivo" required />
+              <input v-model="newDispositivo.numero_activo" required :disabled="editing" />
 
               <label>Equipo</label>
-              <input v-model="newDispositivo.Equipo" required />
+              <input v-model="newDispositivo.equipo" required />
 
               <label>Marca</label>
-              <input v-model="newDispositivo.Marca" required />
+              <input v-model="newDispositivo.marca" required />
 
               <label>Modelo</label>
-              <input v-model="newDispositivo.Modelo" required />
+              <input v-model="newDispositivo.modelo" required />
 
               <label>Código Ubicación</label>
-              <select v-model="newDispositivo.CodigoUbicacion" required>
+              <select v-model="newDispositivo.codigo_ubicacion" required>
                 <option value="" disabled>-- Selecciona ubicación --</option>
                 <option
                   v-for="u in ubicaciones"
-                  :key="u.Codigo ?? u['Codigo'] ?? u.id"
-                  :value="u.Codigo ?? u['Codigo'] ?? u.id"
+                  :key="u.Codigo"
+                  :value="u.Codigo"
                 >
-                  {{ (u.Servicio ?? u.Ubicacion ?? u['Ubicación'] ?? u.Codigo) + ' — ' + (u.Codigo ?? u['Codigo'] ?? '') }}
+                  {{ u.Servicio + ' — ' + u.Codigo }}
                 </option>
                 <option v-if="ubicaciones.length === 0" disabled>Cargando ubicaciones...</option>
               </select>
 
               <label>Código Responsable</label>
-              <select v-model="newDispositivo.CodigoResponsable" required>
+              <select v-model="newDispositivo.codigo_responsable" required>
                 <option value="" disabled>-- Selecciona responsable --</option>
                 <option
                   v-for="r in responsables"
-                  :key="r.id ?? r.Codigo ?? r.Documento"
-                  :value="r.id ?? r.Codigo ?? r.Documento"
+                  :key="r.id"
+                  :value="r.id"
                 >
-                  {{ (r['Nombre y Apellidos'] ?? r.Nombre ?? r['Nombres y Apellidos'] ?? r.Documento ?? r.id) + ' — ' + (r.id ?? r.Documento ?? '') }}
+                  {{ r.Nombre_y_Apellidos + ' — ' + r.id }}
                 </option>
                 <option v-if="responsables.length === 0" disabled>Cargando responsables...</option>
               </select>
@@ -144,23 +144,64 @@
         responsables: [],
         query: "",
         showModal: false,
+        editing: false,
         newDispositivo: {
-          NumeroActivo: "",
-          Equipo: "",
-          Marca: "",
-          Modelo: "",
-          CodigoUbicacion: "",
-          CodigoResponsable: ""
+          numero_activo: "",
+          equipo: "",
+          marca: "",
+          modelo: "",
+          codigo_ubicacion: "",
+          codigo_responsable: ""
         }
       }
     },
 
     mounted() {
+      this.cargarDispositivos()
+      this.cargarUbicaciones()
+      this.cargarResponsables()
+    },
+
+    computed: {
+      filteredDispositivos() {
+        const q = this.query ? this.query.trim().toLowerCase() : ""
+        if (!q) return this.dispositivos
+
+        return this.dispositivos.filter(d => {
+          const fields = [
+            d.Numero_Activo,
+            d.Equipo,
+            d.Marca,
+            d.Modelo,
+            d.Codigo_Ubicacion,
+            d.Codigo_Responsable
+          ]
+
+          return fields.some(f => {
+            return f && f.toString().toLowerCase().includes(q)
+          })
+        })
+      },
+
+      canSave() {
+        return this.newDispositivo.numero_activo && 
+               this.newDispositivo.equipo && 
+               this.newDispositivo.marca && 
+               this.newDispositivo.modelo && 
+               this.newDispositivo.codigo_ubicacion && 
+               this.newDispositivo.codigo_responsable
+      }
+    },
+
+  methods: {
+    cargarDispositivos() {
       fetch("http://localhost/dispositivos/")
         .then(res => res.json())
         .then(data => { this.dispositivos = data })
         .catch(err => console.error("Error al cargar dispositivos:", err))
+    },
 
+    cargarUbicaciones() {
       fetch("http://localhost/ubicaciones/")
         .then(res => res.json())
         .then(data => { this.ubicaciones = data })
@@ -168,7 +209,9 @@
           console.error("Error al cargar ubicaciones:", err)
           this.ubicaciones = []
         })
+    },
 
+    cargarResponsables() {
       fetch("http://localhost/responsables/")
         .then(res => res.json())
         .then(data => { this.responsables = data })
@@ -178,45 +221,47 @@
         })
     },
 
-    computed: {
-    filteredDispositivos() {
-      const q = this.query ? this.query.trim().toLowerCase() : ""
-      if (!q) return this.dispositivos
-
-      return this.dispositivos.filter(d => {
-        const fields = [
-          d["Numero Activo"],
-          d.Equipo,
-          d.Marca,
-          d.Modelo,
-          d["Codigo Ubicacion"],
-          d["Codigo Responsable"]
-        ]
-
-        return fields.some(f => {
-          return f && f.toString().toLowerCase().includes(q)
-        })
-      })
-    }
-  },
-
-  methods: {
     editar(d) {
-      alert("Editar " + d.Equipo)
+      this.editing = true
+      this.newDispositivo = {
+        numero_activo: d.Numero_Activo,
+        equipo: d.Equipo,
+        marca: d.Marca,
+        modelo: d.Modelo,
+        codigo_ubicacion: d.Codigo_Ubicacion,
+        codigo_responsable: d.Codigo_Responsable
+      }
+      this.showModal = true
     },
     
     eliminar(d) {
-      alert("Eliminar registro con código " + d['Numero Activo'])
+      if (confirm("¿Estás seguro de eliminar este equipo médico?")) {
+        fetch(`http://localhost/dispositivos/?borrar=${d.Numero_Activo}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success === 1) {
+              this.cargarDispositivos()
+              alert("Equipo médico eliminado correctamente")
+            } else {
+              alert("Error al eliminar el equipo médico")
+            }
+          })
+          .catch(err => {
+            console.error("Error:", err)
+            alert("Error al eliminar el equipo médico")
+          })
+      }
     },
 
     openModal() {
+      this.editing = false
       this.newDispositivo = {
-        NumeroActivo: "",
-        Equipo: "",
-        Marca: "",
-        Modelo: "",
-        CodigoUbicacion: "",
-        CodigoResponsable: ""
+        numero_activo: "",
+        equipo: "",
+        marca: "",
+        modelo: "",
+        codigo_ubicacion: "",
+        codigo_responsable: ""
       }
       this.showModal = true
     },
@@ -226,23 +271,39 @@
     },
 
     guardarNuevoDispositivo() {
-      if (!this.canSave) {
-        alert("Completa todos los campos.")
-        return
+      const url = this.editing ? 
+        `http://localhost/dispositivos/?actualizar=${this.newDispositivo.numero_activo}` : 
+        "http://localhost/dispositivos/?insertar"
+      
+      const method = "POST"
+      const headers = {
+        "Content-Type": "application/json"
       }
+      
+      const body = JSON.stringify({
+        numero_activo: this.newDispositivo.numero_activo,
+        equipo: this.newDispositivo.equipo,
+        marca: this.newDispositivo.marca,
+        modelo: this.newDispositivo.modelo,
+        codigo_ubicacion: this.newDispositivo.codigo_ubicacion,
+        codigo_responsable: this.newDispositivo.codigo_responsable
+      })
 
-      const nuevo = {
-        "Numero Activo": this.newDispositivo.NumeroActivo,
-        "Equipo": this.newDispositivo.Equipo,
-        "Marca": this.newDispositivo.Marca,
-        "Modelo": this.newDispositivo.Modelo,
-        "Codigo Ubicacion": this.newDispositivo.CodigoUbicacion,
-        "Codigo Responsable": this.newDispositivo.CodigoResponsable
-      }
-
-      this.dispositivos.push(nuevo)
-
-      this.closeModal()
+      fetch(url, { method, headers, body })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success === 1) {
+            this.cargarDispositivos()
+            this.closeModal()
+            alert("Equipo médico guardado correctamente")
+          } else {
+            alert("Error al guardar el equipo médico")
+          }
+        })
+        .catch(err => {
+          console.error("Error:", err)
+          alert("Error al guardar el equipo médico")
+        })
     }
   }
   }

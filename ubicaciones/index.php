@@ -15,7 +15,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 /* Conexión a la base de datos */
 $servidor = "localhost"; 
 $usuario = "root"; 
-$passwd = ""; 
+$passwd = "12345678"; 
 $nombreBaseDatos = "sgt";
 $conexionBD = new mysqli($servidor, $usuario, $passwd, $nombreBaseDatos);
 
@@ -28,7 +28,7 @@ if ($conexionBD->connect_error) {
 /* ---------------------- CONSULTAR POR CÓDIGO ---------------------- */
 if (isset($_GET["consultarCodigo"])) {
     $codigo = $conexionBD->real_escape_string($_GET["consultarCodigo"]);
-    $sqlUbicacion = mysqli_query($conexionBD, "SELECT * FROM ubicaciones WHERE codigo='$codigo'");
+    $sqlUbicacion = mysqli_query($conexionBD, "SELECT * FROM ubicaciones WHERE Codigo='$codigo'");
     if (mysqli_num_rows($sqlUbicacion) > 0) {
         $ubicacion = mysqli_fetch_assoc($sqlUbicacion);
         echo json_encode($ubicacion);
@@ -41,7 +41,7 @@ if (isset($_GET["consultarCodigo"])) {
 /* ---------------------- BORRAR UBICACION ---------------------- */
 if (isset($_GET["borrar"])) {
     $codigo = intval($_GET["borrar"]);
-    $sqlUbicacion = mysqli_query($conexionBD, "DELETE FROM ubicaciones WHERE codigo=$codigo");
+    $sqlUbicacion = mysqli_query($conexionBD, "DELETE FROM ubicaciones WHERE Codigo=$codigo");
     if ($sqlUbicacion) {
         echo json_encode(["success" => 1]);
     } else {  
@@ -59,7 +59,7 @@ if (isset($_GET["insertar"])) {
 
     if ($servicio != "" && $ubicacion != "" && $telefono != "") {        
         $sqlUbicacion = mysqli_query($conexionBD, 
-            "INSERT INTO ubicaciones(servicio, ubicacion, telefono) VALUES('$servicio','$ubicacion','$telefono')");
+            "INSERT INTO ubicaciones(Servicio, Ubicacion, Telefono) VALUES('$servicio','$ubicacion','$telefono')");
         echo json_encode(["success" => $sqlUbicacion ? 1 : 0]);
     } else {
         echo json_encode(["success" => 0, "error" => "Datos incompletos"]);
@@ -76,7 +76,7 @@ if (isset($_GET["actualizar"])) {
     $telefono = $data->telefono ?? '';
 
     $sqlUbicacion = mysqli_query($conexionBD, 
-        "UPDATE ubicaciones SET servicio='$servicio', ubicacion='$ubicacion', telefono='$telefono' WHERE codigo='$codigo'");
+        "UPDATE ubicaciones SET Servicio='$servicio', Ubicacion='$ubicacion', Telefono='$telefono' WHERE Codigo='$codigo'");
     
     echo json_encode(["success" => $sqlUbicacion ? 1 : 0]);
     exit();

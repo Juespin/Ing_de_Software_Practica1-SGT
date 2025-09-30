@@ -51,7 +51,7 @@ if (isset($_GET["insertar"])) {
 
     if ($numero_activo != "" && $equipo != "" && $marca != "" && $modelo != "" && $codigo_ubicacion != "" && $codigo_responsable != "") {        
         $sqlEquipo = mysqli_query($conexionBD, 
-            "INSERT INTO `equipos_medicos`(`Numero_Activo`, `Equipo`, `Marca`, `Modelo`, `Codigo Ubicacion`, `Codigo Responsable`) 
+            "INSERT INTO `equipos_medicos`(`Numero_Activo`, `Equipo`, `Marca`, `Modelo`, `Codigo_Ubicacion`, `Codigo_Responsable`) 
              VALUES('$numero_activo','$equipo','$marca','$modelo','$codigo_ubicacion','$codigo_responsable')");
         echo json_encode(["success" => $sqlEquipo ? 1 : 0]);
     } else {
@@ -73,7 +73,7 @@ if (isset($_GET["actualizar"])) {
     $sqlEquipo = mysqli_query($conexionBD, 
         "UPDATE `equipos_medicos` 
          SET `Equipo`='$equipo', `Marca`='$marca', `Modelo`='$modelo', 
-             `Codigo Ubicacion`='$codigo_ubicacion', `Codigo Responsable`='$codigo_responsable' 
+             `Codigo_Ubicacion`='$codigo_ubicacion', `Codigo_Responsable`='$codigo_responsable' 
          WHERE `Numero_Activo`='$numero_activo'");
     
     echo json_encode(["success" => $sqlEquipo ? 1 : 0]);

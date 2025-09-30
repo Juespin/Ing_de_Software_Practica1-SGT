@@ -15,7 +15,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 /* Conexión a la base de datos */
 $servidor = "localhost"; 
 $usuario = "root"; 
-$passwd = ""; 
+$passwd = "12345678"; 
 $nombreBaseDatos = "sgt";
 $conexionBD = new mysqli($servidor, $usuario, $passwd, $nombreBaseDatos);
 
@@ -27,7 +27,7 @@ if ($conexionBD->connect_error) {
 /* ---------------------- CONSULTAR POR CÓDIGO ---------------------- */
 if (isset($_GET["consultarCodigo"])) {
     $codigo = $conexionBD->real_escape_string($_GET["consultarCodigo"]);
-    $sqlResponsable = mysqli_query($conexionBD, "SELECT * FROM responsables WHERE codigo='$codigo'");
+    $sqlResponsable = mysqli_query($conexionBD, "SELECT * FROM responsables WHERE id='$codigo'");
     if (mysqli_num_rows($sqlResponsable) > 0) {
         $responsable = mysqli_fetch_assoc($sqlResponsable);
         echo json_encode($responsable);
@@ -40,7 +40,7 @@ if (isset($_GET["consultarCodigo"])) {
 /* ---------------------- BORRAR RESPONSABLE ---------------------- */
 if (isset($_GET["borrar"])) {
     $codigo = intval($_GET["borrar"]);
-    $sqlResponsable = mysqli_query($conexionBD, "DELETE FROM responsables WHERE codigo=$codigo");
+    $sqlResponsable = mysqli_query($conexionBD, "DELETE FROM responsables WHERE id=$codigo");
     if ($sqlResponsable) {
         echo json_encode(["success" => 1]);
     } else {  
@@ -59,7 +59,7 @@ if (isset($_GET["insertar"])) {
 
     if ($documento != "" && $nombreape != "" && $cargo != "" && $telefono != "") {        
         $sqlResponsable = mysqli_query($conexionBD, 
-            "INSERT INTO responsables(documento, nombreape, cargo, telefono) 
+            "INSERT INTO responsables(Documento, Nombre_y_Apellidos, Cargo, Telefono) 
              VALUES('$documento','$nombreape','$cargo','$telefono')");
         echo json_encode(["success" => $sqlResponsable ? 1 : 0]);
     } else {
@@ -79,8 +79,8 @@ if (isset($_GET["actualizar"])) {
 
     $sqlResponsable = mysqli_query($conexionBD, 
         "UPDATE responsables 
-         SET documento='$documento', nombreape='$nombreape', cargo='$cargo', telefono='$telefono' 
-         WHERE codigo='$codigo'");
+         SET Documento='$documento', Nombre_y_Apellidos='$nombreape', Cargo='$cargo', Telefono='$telefono' 
+         WHERE id='$codigo'");
     
     echo json_encode(["success" => $sqlResponsable ? 1 : 0]);
     exit();

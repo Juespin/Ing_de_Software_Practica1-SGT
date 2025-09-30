@@ -74,17 +74,14 @@
                 <h3>Añadir nueva ubicación</h3>
 
                 <form @submit.prevent="guardarNuevaUbicacion">
-                  <label>Código</label>
-                  <input v-model="newUbicacion.Codigo" required />
-
                   <label>Servicio</label>
-                  <input v-model="newUbicacion.Servicio" required />
+                  <input v-model="newUbicacion.servicio" required />
 
                   <label>Ubicación</label>
-                  <input v-model="newUbicacion.Ubicacion" required />
+                  <input v-model="newUbicacion.ubicacion" required />
 
                   <label>Teléfono</label>
-                  <input v-model="newUbicacion.Telefono" required />
+                  <input v-model="newUbicacion.telefono" required />
 
                   <div class="modal-actions">
                     <button type="submit" class="btn-accion btn-anadir">Guardar</button>
@@ -109,16 +106,12 @@ export default {
   data() {
     return {
       query: "",
-      ubicaciones: [
-        { Codigo: "U001", Servicio: "Cardiología", Ubicacion: "Piso 1", Telefono: "123456" },
-        { Codigo: "U002", Servicio: "Neurología", Ubicacion: "Piso 2", Telefono: "654321" }
-      ],
+      ubicaciones: [],
       showModal: false,  
       newUbicacion: {    
-        Codigo: "",
-        Servicio: "",
-        Ubicacion: "",
-        Telefono: ""
+        servicio: "",
+        ubicacion: "",
+        telefono: ""
       }
     }
   },
@@ -155,19 +148,66 @@ export default {
 
   methods: {
     editar(u) {
-      alert("Editar " + u.Servicio)
+      this.newUbicacion = {
+        codigo: u.Codigo,
+        servicio: u.Servicio,
+        ubicacion: u.Ubicacion,
+        telefono: u.Telefono
+      }
+      this.showModal = true
     },
     
-    eliminar(id) {
-      alert("Eliminar registro con código " + id)
+    eliminar(codigo) {
+      if (confirm("¿Estás seguro de eliminar esta ubicación?")) {
+        fetch(`http://localhost/ubicaciones/?borrar=${codigo}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success === 1) {
+              this.cargarUbicaciones()
+              alert("Ubicación eliminada correctamente")
+            } else {
+              alert("Error al eliminar la ubicación")
+            }
+          })
+          .catch(err => {
+            console.error("Error:", err)
+            alert("Error al eliminar la ubicación")
+          })
+      }
     },
 
     guardarNuevaUbicacion() {
-      this.ubicaciones.push({ ...this.newUbicacion })
+      const url = this.newUbicacion.codigo ? 
+        `http://localhost/ubicaciones/?actualizar=${this.newUbicacion.codigo}` : 
+        "http://localhost/ubicaciones/?insertar"
+      
+      const method = "POST"
+      const headers = {
+        "Content-Type": "application/json"
+      }
+      
+      const body = JSON.stringify({
+        servicio: this.newUbicacion.servicio,
+        ubicacion: this.newUbicacion.ubicacion,
+        telefono: this.newUbicacion.telefono
+      })
 
-      this.newUbicacion = { Codigo: "", Servicio: "", Ubicacion: "", Telefono: "" }
-
-      this.showModal = false
+      fetch(url, { method, headers, body })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success === 1) {
+            this.cargarUbicaciones()
+            this.showModal = false
+            this.newUbicacion = { servicio: "", ubicacion: "", telefono: "" }
+            alert("Ubicación guardada correctamente")
+          } else {
+            alert("Error al guardar la ubicación")
+          }
+        })
+        .catch(err => {
+          console.error("Error:", err)
+          alert("Error al guardar la ubicación")
+        })
     }
   }
 }
