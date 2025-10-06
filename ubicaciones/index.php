@@ -15,7 +15,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 /* Conexión a la base de datos */
 $servidor = "localhost"; 
 $usuario = "root"; 
-$passwd = "12345678"; 
+$passwd = ""; 
 $nombreBaseDatos = "sgt";
 $conexionBD = new mysqli($servidor, $usuario, $passwd, $nombreBaseDatos);
 

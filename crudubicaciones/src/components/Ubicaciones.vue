@@ -156,24 +156,64 @@ export default {
       }
       this.showModal = true
     },
+
+    cargarUbicaciones() {
+      fetch("http://localhost/ubicaciones/")
+        .then(res => res.json())
+        .then(data => { this.ubicaciones = data })
+        .catch(err => {
+          console.error("Error al cargar ubicaciones:", err)
+          this.ubicaciones = []
+      })
+    },
     
     eliminar(codigo) {
-      if (confirm("¿Estás seguro de eliminar esta ubicación?")) {
-        fetch(`http://localhost/ubicaciones/?borrar=${codigo}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success === 1) {
-              this.cargarUbicaciones()
-              alert("Ubicación eliminada correctamente")
-            } else {
-              alert("Error al eliminar la ubicación")
-            }
-          })
-          .catch(err => {
-            console.error("Error:", err)
-            alert("Error al eliminar la ubicación")
-          })
-      }
+      // Paso 1: Verificar dispositivos antes de eliminar
+      fetch("http://localhost/dispositivos/")
+        .then(res => res.json())
+        .then(data => {
+          const dispositivos = Array.isArray(data) ? data : data.data || []
+
+          // Buscar los dispositivos relacionados con este responsable
+          const relacionados = dispositivos.filter(d =>
+            d.Codigo_Ubicacion == codigo 
+          )
+
+          // Si existen relaciones, mostrar mensaje y abortar eliminación
+          if (relacionados.length > 0) {
+            const lista = relacionados
+              .map(d => `• ${d.Numero_Activo}: ${d.Equipo} ${d.Modelo}`)
+              .join("\n")
+
+            alert(
+              "⚠️ No se puede eliminar esta ubicación porque está asociado a los siguientes dispositivos:\n\n" +
+              lista
+            )
+            return
+          }
+
+          // Paso 2: Confirmar eliminación si no hay vínculos
+          if (confirm("¿Estás seguro de eliminar esta ubicación?")) {
+            fetch(`http://localhost/ubicaciones/?borrar=${codigo}`)
+              .then(res => res.json())
+              .then(data => {
+                if (data.success === 1) {
+                  this.cargarUbicaciones()
+                  alert("Ubicación eliminada correctamente")
+                } else {
+                  alert("Error al eliminar la ubicación")
+                }
+              })
+              .catch(err => {
+                console.error("Error:", err)
+                alert("Error al eliminar la ubicación")
+              })
+          }
+        })
+        .catch(err => {
+          console.error("Error al verificar dispositivos:", err)
+          alert("Error al verificar relaciones antes de eliminar.")
+        })
     },
 
     guardarNuevaUbicacion() {
@@ -195,7 +235,7 @@ export default {
       fetch(url, { method, headers, body })
         .then(res => res.json())
         .then(data => {
-          if (data.success === 1) {
+          if (data.success == 1) {
             this.cargarUbicaciones()
             this.showModal = false
             this.newUbicacion = { servicio: "", ubicacion: "", telefono: "" }

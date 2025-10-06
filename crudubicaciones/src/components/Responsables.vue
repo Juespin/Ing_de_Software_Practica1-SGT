@@ -62,7 +62,7 @@
 
               <!-- Botón Eliminar -->
               <button
-                @click="eliminar(r.Documento)"
+                @click="eliminar(r.id)"
                 class="btn-accion btn-eliminar"
               >
                 🗑️ Eliminar
@@ -163,25 +163,74 @@ export default {
       }
       this.showModal = true
     },
+
+    cargarDispositivos() {
+      fetch("http://localhost/dispositivos/")
+        .then(res => res.json())
+        .then(data => { this.dispositivos = data })
+        .catch(err => console.error("Error al cargar dispositivos:", err))
+    },
+
+    cargarResponsables() {
+      fetch("http://localhost/responsables/")
+        .then(res => res.json())
+        .then(data => { this.responsables = data })
+        .catch(err => {
+          console.error("Error al cargar responsables:", err)
+          this.responsables = []
+        })
+    },
     
     eliminar(id) {
-      if (confirm("¿Estás seguro de eliminar este responsable?")) {
-        fetch(`http://localhost/responsables/?borrar=${id}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success === 1) {
-              this.cargarResponsables()
-              alert("Responsable eliminado correctamente")
-            } else {
-              alert("Error al eliminar el responsable")
-            }
-          })
-          .catch(err => {
-            console.error("Error:", err)
-            alert("Error al eliminar el responsable")
-          })
-      }
+      // Paso 1: Verificar dispositivos antes de eliminar
+      fetch("http://localhost/dispositivos/")
+        .then(res => res.json())
+        .then(data => {
+          const dispositivos = Array.isArray(data) ? data : data.data || []
+
+          // Buscar los dispositivos relacionados con este responsable
+          const relacionados = dispositivos.filter(d =>
+            d.Codigo_Responsable == id 
+          )
+
+          // Si existen relaciones, mostrar mensaje y abortar eliminación
+          if (relacionados.length > 0) {
+            const lista = relacionados
+              .map(d => `• ${d.Numero_Activo}: ${d.Equipo} ${d.Modelo}`)
+              .join("\n")
+
+            alert(
+              "⚠️ No se puede eliminar este responsable porque está asociado a los siguientes dispositivos:\n\n" +
+              lista
+            )
+            return
+          }
+
+          // Paso 2: Confirmar eliminación si no hay vínculos
+          if (confirm("¿Estás seguro de eliminar este responsable?")) {
+            fetch(`http://localhost/responsables/?borrar=${id}`)
+              .then(res => res.json())
+              .then(data => {
+                if (data.success === 1) {
+                  this.cargarResponsables()
+                  alert("Responsable eliminado correctamente")
+                } else {
+                  alert("Error al eliminar el responsable")
+                }
+              })
+              .catch(err => {
+                console.error("Error:", err)
+                alert("Error al eliminar el responsable")
+              })
+          }
+        })
+        .catch(err => {
+          console.error("Error al verificar dispositivos:", err)
+          alert("Error al verificar relaciones antes de eliminar.")
+        })
     },
+
+
 
     guardarNuevoResponsable() {
       const url = this.newResponsable.id ? 
